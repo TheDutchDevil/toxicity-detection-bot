@@ -1,0 +1,26 @@
+{
+  "name": "toxic-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "ncc build index.js --license licenses.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "@octokit/rest": "^18.1.1",
+    "@tensorflow-models/toxicity": "^1.2.2",
+    "@tensorflow/tfjs": "^3.0.0",
+    "axios": "^0.21.1",
+    "rand-seed": "^1.0.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "mocha": "^8.3.0"
+  }
+}

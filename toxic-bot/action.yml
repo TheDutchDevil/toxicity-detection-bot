@@ -1,0 +1,15 @@
+name: 'Toxicity bot'
+description: ''
+inputs:
+  GITHUB_TOKEN:  # id of input
+    description: 'Token used to make comments'
+    required: true
+  LOG_KEY:
+    description: 'Key used to log information for this project'
+    required: true
+  MESSAGE:
+    description: "The message that is posted when the bot detects toxicity"
+    required: false
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
