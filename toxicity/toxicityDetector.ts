@@ -66,7 +66,9 @@ export class ToxicityDetector {
                     message = "Do not be toxic!";
                 }
 
-                var surveyUrl = await SurveyApi.getSurveyUrl(command.slug, command.issueNumber);
+                var surveyUrl = await SurveyApi.getSurveyUrl(command.slug, command.issueNumber);                
+
+                command.toxicitySurveyUrl = surveyUrl;
 
                 message += `
 

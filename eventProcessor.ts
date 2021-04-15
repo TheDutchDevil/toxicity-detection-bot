@@ -65,6 +65,7 @@ export enum Triggers {
      public predictions : any;
      public isToxic : boolean;
      public shouldIntervene: boolean;
+     public toxicitySurveyUrl : string;
 
      constructor(context : Context, location : LogTypes, trigger: Triggers,
                  slug: string, issueNumber: number, text : string = null) {
