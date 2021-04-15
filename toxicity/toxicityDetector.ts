@@ -24,6 +24,8 @@ export class ToxicityDetector {
         this.threshold = threshold;
 
         this.apiWrapper = new ApiWrapper();
+
+        core.debug(`Set up toxicity detector with a threshold of ${threshold}`);
     }
 
     private async setUp() : Promise<void> {
