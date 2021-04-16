@@ -57,7 +57,7 @@ export class ToxicityDetector {
              */
             const rand = new Rand(String(hashCode(`${command.slug}-${command.issueNumber}`)));
 
-            if(rand.next() > .01) {
+            if(rand.next() > .5) {
                 command.shouldIntervene = true; 
 
                 let message = core.getInput("MESSAGE");
