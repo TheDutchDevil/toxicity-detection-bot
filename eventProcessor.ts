@@ -140,7 +140,7 @@ export enum Triggers {
          
          actionName = `${command.type} ${actionName}`;
 
-         getAppInsightsClient().trackRequest({name: actionName, duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true})
+         getAppInsightsClient().trackRequest({name: actionName, url:'test', duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true, resultCode: 200})
      }
 
      private parseCommand(context: Context) : Command{
