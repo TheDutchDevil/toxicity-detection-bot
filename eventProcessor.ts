@@ -13,6 +13,8 @@ import { copyRegisteredKernels } from "@tensorflow/tfjs-core";
 import { EventLogger } from "./toxicApi/Logger";
 import { ToxicityDetector } from "./toxicity/toxicityDetector";
 
+import { getAppInsightsClient } from "./appInsights";
+
 import * as core from "@actions/core"
 
 
@@ -69,7 +71,7 @@ export enum Triggers {
 
      constructor(context : Context, location : LogTypes, trigger: Triggers,
                  slug: string, issueNumber: number, text : string = null) {
-         super(context, "Toxic");
+         super(context, "ToxicityCheck");
 
          if (text === null) {
             this.text = context.payload.comment.body;
@@ -110,6 +112,9 @@ export enum Triggers {
  export class EventProcessor {
 
      async processEvent(context : Context) : Promise<void> {
+
+        let startTime = new Date();
+
         const command =  this.parseCommand(context);
 
         if(command === null) {
@@ -130,6 +135,12 @@ export enum Triggers {
          * Log the event
          */
          EventLogger.getInstance().LogCommand(command);
+
+         var actionName = command instanceof ToxicityCommand ? (<ToxicityCommand>command).location.toString() : (<LoggingCommand>command).trigger.toString();
+         
+         actionName = `${command.type} ${actionName}`;
+
+         getAppInsightsClient().trackRequest({name: actionName, duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true})
      }
 
      private parseCommand(context: Context) : Command{
