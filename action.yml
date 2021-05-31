@@ -10,6 +10,9 @@ inputs:
   MESSAGE:
     description: "The message that is posted when the bot detects toxicity"
     required: false
+  SILENT:
+    description: "Whether the bot should post a comment when toxicity has been detected"
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
