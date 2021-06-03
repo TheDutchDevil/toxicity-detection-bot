@@ -59,7 +59,11 @@ export class ToxicityDetector {
 
             let silentString = core.getInput("SILENT");
 
-            let isSilent = silentString.toLowerCase() === "true";
+            let isSilent = silentString.toLowerCase() === "true";            
+
+            var surveyUrl = await SurveyApi.getSurveyUrl(command.slug, command.issueNumber);                
+
+            command.toxicitySurveyUrl = surveyUrl;
 
             if(!isSilent && rand.next() > .5) {
                 command.shouldIntervene = true; 
@@ -69,10 +73,6 @@ export class ToxicityDetector {
                 if (message === "") {
                     message = "Do not be toxic!";
                 }
-
-                var surveyUrl = await SurveyApi.getSurveyUrl(command.slug, command.issueNumber);                
-
-                command.toxicitySurveyUrl = surveyUrl;
 
                 message += `
 
