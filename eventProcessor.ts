@@ -120,7 +120,9 @@ export enum Triggers {
 
         const slug = payload.repository.full_name;
 
-        const command =  this.parseCommand(payload, slug);
+        const event_name = context.payload.client_payload.event_name;
+
+        const command =  this.parseCommand(payload, slug, event_name);
 
         if(command === null) {
             core.error("Could not process event into a command");
@@ -148,14 +150,14 @@ export enum Triggers {
          getAppInsightsClient().trackRequest({name: actionName, url:'test', duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true, resultCode: 200})
      }
 
-     private parseCommand(payload, slug) : Command{
+     private parseCommand(payload, slug, event_name) : Command{
          let command: Command = null;
 
 
          /**
           * This works for both a PR discussion comment and an issue discussion comment.
           */
-         if (payload.event_name === "issue_comment") {
+         if (event_name === "issue_comment") {
 
              const commentAction = payload.action;
 
@@ -168,7 +170,7 @@ export enum Triggers {
         /**
          * The below is called for every inline review comment that is posted. 
          */
-         } else if (payload.event_name === "pull_request_review_comment") {
+         } else if (event_name === "pull_request_review_comment") {
              const commentAction = payload.action;
 
              if (commentAction === "created" || commentAction === "edited") {
@@ -177,7 +179,7 @@ export enum Triggers {
              } else if (commentAction === "deleted") {
                  command = new LoggingCommand(payload, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
              }
-         } else if (payload.event_name === "pull_request_review") {
+         } else if (event_name === "pull_request_review") {
              const commentAction = payload.action;
 
              if (commentAction === "submitted" && payload.review.body !== null) {
@@ -195,7 +197,7 @@ export enum Triggers {
              } else if (commentAction === "dismissed") {
                  command = new LoggingCommand(payload, LogTypes.REVIEW, Triggers.DELETE);
              }
-         } else if (payload.event_name === "issues") {
+         } else if (event_name === "issues") {
             const action = payload.action;
 
             if(action === "opened") {
@@ -207,7 +209,7 @@ export enum Triggers {
             } else {
                 command = new LoggingCommand(payload, LogTypes.ISSUE, Triggers.OTHER);
             }
-         } else if (payload.event_name === "pull_request") {
+         } else if (event_name === "pull_request") {
              const action = payload.action;
 
              if(action === "opened") {
