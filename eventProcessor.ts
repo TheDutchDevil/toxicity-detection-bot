@@ -43,8 +43,8 @@ export enum Triggers {
 
  export class Command {
 
-     constructor(payload, type: string) {
-         this.context = payload;
+     constructor(context, type: string) {
+         this.context = context;
          this.type = type;
      }
 
@@ -69,12 +69,12 @@ export enum Triggers {
      public shouldIntervene: boolean;
      public toxicitySurveyUrl : string;
 
-     constructor(payload, location : LogTypes, trigger: Triggers,
+     constructor(context, location : LogTypes, trigger: Triggers,
                  slug: string, issueNumber: number, text : string = null) {
-         super(payload, "ToxicityCheck");
+         super(context, "ToxicityCheck");
 
          if (text === null) {
-            this.text = payload.comment.body;
+            this.text = context.payload.comment.body;
          } else {
             this.text = text; 
          }
@@ -101,8 +101,8 @@ export enum Triggers {
     type : LogTypes;
     trigger : Triggers;
 
-    constructor(payload, type: LogTypes, trigger: Triggers) {
-        super(payload, "Logging");
+    constructor(context, type: LogTypes, trigger: Triggers) {
+        super(context, "Logging");
         this.type = type;
         this.trigger = trigger;
     }
@@ -122,7 +122,7 @@ export enum Triggers {
 
         const event_name = context.payload.client_payload.event_name;
 
-        const command =  this.parseCommand(payload, slug, event_name);
+        const command =  this.parseCommand(payload, slug, event_name, context.payload.client_payload);
 
         if(command === null) {
             core.error("Could not process event into a command");
@@ -150,7 +150,7 @@ export enum Triggers {
          getAppInsightsClient().trackRequest({name: actionName, url:'test', duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true, resultCode: 200})
      }
 
-     private parseCommand(payload, slug, event_name) : Command{
+     private parseCommand(payload, slug, event_name, context) : Command{
          let command: Command = null;
 
 
@@ -162,10 +162,10 @@ export enum Triggers {
              const commentAction = payload.action;
 
              if (commentAction === "created" || commentAction === "edited") {
-                 command = new ToxicityCommand(payload, LogTypes.COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
+                 command = new ToxicityCommand(context, LogTypes.COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
                  slug, payload.issue.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(payload, LogTypes.COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.COMMENT, Triggers.DELETE);
              } 
         /**
          * The below is called for every inline review comment that is posted. 
@@ -174,16 +174,16 @@ export enum Triggers {
              const commentAction = payload.action;
 
              if (commentAction === "created" || commentAction === "edited") {
-                command = new ToxicityCommand(payload, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
+                command = new ToxicityCommand(context, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
                 slug, payload.issue.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(payload, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
              }
          } else if (event_name === "pull_request_review") {
              const commentAction = payload.action;
 
              if (commentAction === "submitted" && payload.review.body !== null) {
-                 command = new ToxicityCommand(payload, LogTypes.REVIEW, Triggers.CREATE, slug,
+                 command = new ToxicityCommand(context, LogTypes.REVIEW, Triggers.CREATE, slug,
                  payload.pull_request.number, payload.review.body);
              }
              else if (commentAction === "edited" && Object.keys(payload.changes).length > 0) {
@@ -192,34 +192,34 @@ export enum Triggers {
                   */
                  const text = payload.review.body;
                  
-                 command = new ToxicityCommand(payload, LogTypes.REVIEW, Triggers.EDIT,
+                 command = new ToxicityCommand(context, LogTypes.REVIEW, Triggers.EDIT,
                     slug, payload.pull_request.number, text);
              } else if (commentAction === "dismissed") {
-                 command = new LoggingCommand(payload, LogTypes.REVIEW, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.REVIEW, Triggers.DELETE);
              }
          } else if (event_name === "issues") {
             const action = payload.action;
 
             if(action === "opened") {
-                command = new ToxicityCommand(payload, LogTypes.ISSUE, Triggers.CREATE, slug, 
+                command = new ToxicityCommand(context, LogTypes.ISSUE, Triggers.CREATE, slug, 
                     payload.issue.number, payload.issue.body);
             } else if(action === "edited") {
-                command = new ToxicityCommand(payload, LogTypes.ISSUE, Triggers.EDIT, slug, 
+                command = new ToxicityCommand(context, LogTypes.ISSUE, Triggers.EDIT, slug, 
                     payload.issue.number, payload.issue.body);
             } else {
-                command = new LoggingCommand(payload, LogTypes.ISSUE, Triggers.OTHER);
+                command = new LoggingCommand(context, LogTypes.ISSUE, Triggers.OTHER);
             }
          } else if (event_name === "pull_request") {
              const action = payload.action;
 
              if(action === "opened") {
-                 command = new ToxicityCommand(payload, LogTypes.PULL_REQUEST, Triggers.CREATE,
+                 command = new ToxicityCommand(context, LogTypes.PULL_REQUEST, Triggers.CREATE,
                  slug, payload.pull_request.number, payload.pull_request.body)
              } else if(action === "edited") {
-                 command = new ToxicityCommand(payload, LogTypes.PULL_REQUEST, Triggers.OTHER, slug,
+                 command = new ToxicityCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER, slug,
                  payload.pull_request.number, payload.pull_request.body)
              } else {
-                 command = new LoggingCommand(payload, LogTypes.PULL_REQUEST, Triggers.OTHER);
+                 command = new LoggingCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER);
              }
          } else {
              core.error("Was not able to understand incoming event.");
