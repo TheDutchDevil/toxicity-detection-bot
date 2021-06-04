@@ -115,6 +115,8 @@ export enum Triggers {
 
         let startTime = new Date();
 
+        core.info(JSON.stringify(context))
+
         const command =  this.parseCommand(context);
 
         if(command === null) {
