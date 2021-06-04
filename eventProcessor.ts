@@ -43,12 +43,12 @@ export enum Triggers {
 
  export class Command {
 
-     constructor(context : Context, type: string) {
-         this.context = context;
+     constructor(payload, type: string) {
+         this.context = payload;
          this.type = type;
      }
 
-     public context : Context;
+     public context : any;
      public type : string;
  }
 
@@ -69,12 +69,12 @@ export enum Triggers {
      public shouldIntervene: boolean;
      public toxicitySurveyUrl : string;
 
-     constructor(context : Context, location : LogTypes, trigger: Triggers,
+     constructor(payload, location : LogTypes, trigger: Triggers,
                  slug: string, issueNumber: number, text : string = null) {
-         super(context, "ToxicityCheck");
+         super(payload, "ToxicityCheck");
 
          if (text === null) {
-            this.text = context.payload.comment.body;
+            this.text = payload.comment.body;
          } else {
             this.text = text; 
          }
@@ -101,8 +101,8 @@ export enum Triggers {
     type : LogTypes;
     trigger : Triggers;
 
-    constructor(context: Context, type: LogTypes, trigger: Triggers) {
-        super(context, "Logging");
+    constructor(payload, type: LogTypes, trigger: Triggers) {
+        super(payload, "Logging");
         this.type = type;
         this.trigger = trigger;
     }

@@ -17,7 +17,6 @@ async function run() {
     await eventProcessor.processEvent(context);
   } catch (error) {
     getAppInsightsClient().trackException({exception: error})
-    core.error(error);
     core.setFailed(error.message);
   }
 }
