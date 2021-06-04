@@ -116,7 +116,7 @@ export enum Triggers {
         let startTime = new Date();
 
         
-        const payload = context.payload.client_payload;
+        const payload = context.payload.client_payload.payload;
 
         const slug = payload.repository.full_name;
 
