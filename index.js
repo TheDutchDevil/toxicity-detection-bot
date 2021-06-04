@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { Octokit } = require("@octokit/rest");
 
-import {insights} from "./appInsights";
+import {getAppInsightsClient} from "./appInsights";
 
 
 import { Command, EventProcessor } from "./eventProcessor";
@@ -16,7 +16,8 @@ async function run() {
 
     await eventProcessor.processEvent(context);
   } catch (error) {
-    insights.getAppInsightsClient().trackException({exception: error})
+    getAppInsightsClient().trackException({exception: error})
+    core.error(error);
     core.setFailed(error.message);
   }
 }
