@@ -115,9 +115,12 @@ export enum Triggers {
 
         let startTime = new Date();
 
-        core.info(JSON.stringify(context))
+        
+        const payload = context.payload.client_payload;
 
-        const command =  this.parseCommand(context);
+        const slug = payload.repository.full_name;
+
+        const command =  this.parseCommand(payload, slug);
 
         if(command === null) {
             core.error("Could not process event into a command");
@@ -145,77 +148,76 @@ export enum Triggers {
          getAppInsightsClient().trackRequest({name: actionName, url:'test', duration: (new Date().getTime() - startTime.getTime())/ 1000, success: true, resultCode: 200})
      }
 
-     private parseCommand(context: Context) : Command{
+     private parseCommand(payload, slug) : Command{
          let command: Command = null;
 
-         const slug = `${context.repo.owner}/${context.repo.repo}`;
 
          /**
           * This works for both a PR discussion comment and an issue discussion comment.
           */
-         if (context.eventName === "issue_comment") {
+         if (payload.event_name === "issue_comment") {
 
-             const commentAction = context.payload.action;
+             const commentAction = payload.action;
 
              if (commentAction === "created" || commentAction === "edited") {
-                 command = new ToxicityCommand(context, LogTypes.COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
-                 slug, context.issue.number);
+                 command = new ToxicityCommand(payload, LogTypes.COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
+                 slug, payload.issue.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(context, LogTypes.COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(payload, LogTypes.COMMENT, Triggers.DELETE);
              } 
         /**
          * The below is called for every inline review comment that is posted. 
          */
-         } else if (context.eventName === "pull_request_review_comment") {
-             const commentAction = context.payload.action;
+         } else if (payload.event_name === "pull_request_review_comment") {
+             const commentAction = payload.action;
 
              if (commentAction === "created" || commentAction === "edited") {
-                command = new ToxicityCommand(context, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
-                slug, context.issue.number);
+                command = new ToxicityCommand(payload, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
+                slug, payload.issue.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(context, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(payload, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
              }
-         } else if (context.eventName === "pull_request_review") {
-             const commentAction = context.payload.action;
+         } else if (payload.event_name === "pull_request_review") {
+             const commentAction = payload.action;
 
-             if (commentAction === "submitted" && context.payload.review.body !== null) {
-                 command = new ToxicityCommand(context, LogTypes.REVIEW, Triggers.CREATE, slug,
-                 context.payload.pull_request.number, context.payload.review.body);
+             if (commentAction === "submitted" && payload.review.body !== null) {
+                 command = new ToxicityCommand(payload, LogTypes.REVIEW, Triggers.CREATE, slug,
+                 payload.pull_request.number, payload.review.body);
              }
-             else if (commentAction === "edited" && Object.keys(context.payload.changes).length > 0) {
+             else if (commentAction === "edited" && Object.keys(payload.changes).length > 0) {
                  /**
                   * If there are no changes then the submitted trigger was already called
                   */
-                 const text = context.payload.review.body;
+                 const text = payload.review.body;
                  
-                 command = new ToxicityCommand(context, LogTypes.REVIEW, Triggers.EDIT,
-                    slug, context.payload.pull_request.number, text);
+                 command = new ToxicityCommand(payload, LogTypes.REVIEW, Triggers.EDIT,
+                    slug, payload.pull_request.number, text);
              } else if (commentAction === "dismissed") {
-                 command = new LoggingCommand(context, LogTypes.REVIEW, Triggers.DELETE);
+                 command = new LoggingCommand(payload, LogTypes.REVIEW, Triggers.DELETE);
              }
-         } else if (context.eventName === "issues") {
-            const action = context.payload.action;
+         } else if (payload.event_name === "issues") {
+            const action = payload.action;
 
             if(action === "opened") {
-                command = new ToxicityCommand(context, LogTypes.ISSUE, Triggers.CREATE, slug, 
-                    context.payload.issue.number, context.payload.issue.body);
+                command = new ToxicityCommand(payload, LogTypes.ISSUE, Triggers.CREATE, slug, 
+                    payload.issue.number, payload.issue.body);
             } else if(action === "edited") {
-                command = new ToxicityCommand(context, LogTypes.ISSUE, Triggers.EDIT, slug, 
-                    context.payload.issue.number, context.payload.issue.body);
+                command = new ToxicityCommand(payload, LogTypes.ISSUE, Triggers.EDIT, slug, 
+                    payload.issue.number, payload.issue.body);
             } else {
-                command = new LoggingCommand(context, LogTypes.ISSUE, Triggers.OTHER);
+                command = new LoggingCommand(payload, LogTypes.ISSUE, Triggers.OTHER);
             }
-         } else if (context.eventName === "pull_request") {
-             const action = context.payload.action;
+         } else if (payload.event_name === "pull_request") {
+             const action = payload.action;
 
              if(action === "opened") {
-                 command = new ToxicityCommand(context, LogTypes.PULL_REQUEST, Triggers.CREATE,
-                 slug, context.payload.pull_request.number, context.payload.pull_request.body)
+                 command = new ToxicityCommand(payload, LogTypes.PULL_REQUEST, Triggers.CREATE,
+                 slug, payload.pull_request.number, payload.pull_request.body)
              } else if(action === "edited") {
-                 command = new ToxicityCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER, slug,
-                 context.payload.pull_request.number, context.payload.pull_request.body)
+                 command = new ToxicityCommand(payload, LogTypes.PULL_REQUEST, Triggers.OTHER, slug,
+                 payload.pull_request.number, payload.pull_request.body)
              } else {
-                 command = new LoggingCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER);
+                 command = new LoggingCommand(payload, LogTypes.PULL_REQUEST, Triggers.OTHER);
              }
          } else {
              core.error("Was not able to understand incoming event.");
