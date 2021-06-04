@@ -175,7 +175,7 @@ export enum Triggers {
 
              if (commentAction === "created" || commentAction === "edited") {
                 command = new ToxicityCommand(context, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
-                slug, payload.issue.number);
+                slug, payload.pull_request.number);
              } else if (commentAction === "deleted") {
                  command = new LoggingCommand(context, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
              }
