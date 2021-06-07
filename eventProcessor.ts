@@ -126,6 +126,7 @@ export enum Triggers {
 
         if(command === null) {
             core.error("Could not process event into a command");
+            core.error(`Received triggering object was ${JSON.stringify(context)}`);
             return;
         }
 
@@ -221,9 +222,7 @@ export enum Triggers {
              } else {
                  command = new LoggingCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER);
              }
-         } else {
-             core.error("Was not able to understand incoming event.");
-         }
+         } 
 
          return command;
      }
