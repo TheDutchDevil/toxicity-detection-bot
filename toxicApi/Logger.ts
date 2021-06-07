@@ -45,7 +45,7 @@ import { Command } from "../eventProcessor";
         }
 
         try {
-            let res = await axios.put("https://toxic.research.cassee.dev/log", command, { params: { key: this.key, slug: this.slug}} );
+            let res = await axios.put("https://toxic.research.cassee.dev/log", command, { params: { key: this.key, slug: command.slug}} );
 
             core.debug("Logged processed command");
         } catch(err) {

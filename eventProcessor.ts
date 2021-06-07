@@ -43,13 +43,16 @@ export enum Triggers {
 
  export class Command {
 
-     constructor(context, type: string) {
+     constructor(context, type: string, slug: string) {
          this.context = context;
          this.type = type;
+         this.slug = slug;
      }
 
      public context : any;
      public type : string;
+
+     public slug: string;
  }
 
 /**
@@ -60,8 +63,6 @@ export enum Triggers {
      public text : string;
      public location: LogTypes;
      public trigger: Triggers;
-
-     public slug: string;
      public issueNumber : number;
 
      public predictions : any;
@@ -71,7 +72,7 @@ export enum Triggers {
 
      constructor(context, location : LogTypes, trigger: Triggers,
                  slug: string, issueNumber: number, text : string = null) {
-         super(context, "ToxicityCheck");
+         super(context, "ToxicityCheck", slug);
 
          if (text === null) {
             this.text = context.payload.comment.body;
@@ -81,7 +82,6 @@ export enum Triggers {
          this.location = location;
          this.trigger = trigger;
 
-         this.slug = slug;
          this.issueNumber = issueNumber;
      }
 
@@ -101,8 +101,8 @@ export enum Triggers {
     type : LogTypes;
     trigger : Triggers;
 
-    constructor(context, type: LogTypes, trigger: Triggers) {
-        super(context, "Logging");
+    constructor(context, type: LogTypes, trigger: Triggers, slug: string) {
+        super(context, "Logging", slug);
         this.type = type;
         this.trigger = trigger;
     }
@@ -166,7 +166,7 @@ export enum Triggers {
                  command = new ToxicityCommand(context, LogTypes.COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
                  slug, payload.issue.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(context, LogTypes.COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.COMMENT, Triggers.DELETE, slug);
              } 
         /**
          * The below is called for every inline review comment that is posted. 
@@ -178,7 +178,7 @@ export enum Triggers {
                 command = new ToxicityCommand(context, LogTypes.REVIEW_COMMENT, commentAction === "created" ? Triggers.CREATE : Triggers.EDIT,
                 slug, payload.pull_request.number);
              } else if (commentAction === "deleted") {
-                 command = new LoggingCommand(context, LogTypes.REVIEW_COMMENT, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.REVIEW_COMMENT, Triggers.DELETE, slug);
              }
          } else if (event_name === "pull_request_review") {
              const commentAction = payload.action;
@@ -196,7 +196,7 @@ export enum Triggers {
                  command = new ToxicityCommand(context, LogTypes.REVIEW, Triggers.EDIT,
                     slug, payload.pull_request.number, text);
              } else if (commentAction === "dismissed") {
-                 command = new LoggingCommand(context, LogTypes.REVIEW, Triggers.DELETE);
+                 command = new LoggingCommand(context, LogTypes.REVIEW, Triggers.DELETE, slug);
              }
          } else if (event_name === "issues") {
             const action = payload.action;
@@ -208,7 +208,7 @@ export enum Triggers {
                 command = new ToxicityCommand(context, LogTypes.ISSUE, Triggers.EDIT, slug, 
                     payload.issue.number, payload.issue.body);
             } else {
-                command = new LoggingCommand(context, LogTypes.ISSUE, Triggers.OTHER);
+                command = new LoggingCommand(context, LogTypes.ISSUE, Triggers.OTHER, slug);
             }
          } else if (event_name === "pull_request") {
              const action = payload.action;
@@ -220,7 +220,7 @@ export enum Triggers {
                  command = new ToxicityCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER, slug,
                  payload.pull_request.number, payload.pull_request.body)
              } else {
-                 command = new LoggingCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER);
+                 command = new LoggingCommand(context, LogTypes.PULL_REQUEST, Triggers.OTHER, slug);
              }
          } 
 
