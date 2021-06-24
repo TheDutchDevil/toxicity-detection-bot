@@ -134,7 +134,7 @@ export enum Triggers {
 
             core.info(`Processing Toxicity Command of location: ${command.location} and trigger ${command.trigger}`);
             
-            const detector = new ToxicityDetector(0.8);
+            const detector = new ToxicityDetector(0.7);
 
             await detector.processCommand(<ToxicityCommand>command);
         } 
